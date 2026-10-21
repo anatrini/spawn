@@ -1,0 +1,14 @@
+{
+	"author" : "anatrini",
+	"description" : "spawn: run a command line from Max and read what it prints",
+	"max_version_min" : "8.2.0",
+	"name" : "spawn",
+	"os" : {
+		"macintosh" : {
+			"platform" : [ "x64", "aarch64" ],
+			"min_version" : "11.0"
+		}
+	},
+	"tags" : [ "shell", "process", "python" ],
+	"version" : "0.1.0"
+}

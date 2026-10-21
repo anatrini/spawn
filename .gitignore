@@ -1,0 +1,4 @@
+build/
+externals/
+max-sdk
+.DS_Store

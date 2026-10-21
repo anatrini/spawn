@@ -1,6 +1,6 @@
 {
 	"author" : "anatrini",
-	"description" : "spawn: run a command line from Max and read what it prints",
+	"description" : "spawn: run a command line from Max (and Pd) and read what it prints",
 	"max_version_min" : "8.2.0",
 	"name" : "spawn",
 	"os" : {
@@ -10,5 +10,5 @@
 		}
 	},
 	"tags" : [ "shell", "process", "python" ],
-	"version" : "0.1.0"
+	"version" : "0.2.0"
 }

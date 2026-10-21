@@ -1,4 +1,5 @@
 build/
 externals/
+pd/*.pd_darwin
 max-sdk
 .DS_Store

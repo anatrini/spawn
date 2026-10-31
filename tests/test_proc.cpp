@@ -91,6 +91,7 @@ int main()
         return 2;
     }
     FreeConsole();
+    std::setvbuf(stdout, nullptr, _IONBF, 0);  // if the test dies, the results so far stay in the file
 
     {
         Run r = run("echo hello");

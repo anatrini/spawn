@@ -131,13 +131,16 @@ std::wstring environment_block()
 
 std::mutex console_mutex;
 std::atomic<long long> ignore_ctrl_c_until{0};
+HANDLE ctrl_c_delivered = nullptr;
 
 // The ctrl-C sent to the command also reaches this process, later and on
-// another thread; without this handler it would end the host. It stays
-// installed, because the event may arrive after the console has been left.
+// another thread; without this handler it would end the host.
 BOOL WINAPI ctrl_handler(DWORD type)
 {
-    return type == CTRL_C_EVENT && now_ms() < ignore_ctrl_c_until ? TRUE : FALSE;
+    if (type != CTRL_C_EVENT || now_ms() >= ignore_ctrl_c_until)
+        return FALSE;
+    SetEvent(ctrl_c_delivered);
+    return TRUE;
 }
 
 // False if ctrl-C could not be sent, for example when the host has a console of
@@ -151,16 +154,30 @@ bool send_ctrl_c(DWORD pid)
     GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_PIN,
                        (LPCWSTR)&ctrl_handler, &self);
 
-    // Handlers run last-added first: this one goes before any added since.
-    SetConsoleCtrlHandler(ctrl_handler, FALSE);
-    SetConsoleCtrlHandler(ctrl_handler, TRUE);
-    ignore_ctrl_c_until = now_ms() + 2000;
+    if (!ctrl_c_delivered)
+        ctrl_c_delivered = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    if (!ctrl_c_delivered)
+        return false;
+    ResetEvent(ctrl_c_delivered);
 
     if (!AttachConsole(pid))
         return false;
-    BOOL sent = GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
+
+    // Only now: a handler installed before attaching does not protect the host,
+    // which ctrl-C then ends. Handlers run last-added first: this one goes
+    // before any added since. No ctrl-C unless it is installed.
+    SetConsoleCtrlHandler(ctrl_handler, FALSE);
+    bool sent = false;
+    if (SetConsoleCtrlHandler(ctrl_handler, TRUE)) {
+        ignore_ctrl_c_until = now_ms() + 2000;
+        sent = GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0) != FALSE;
+        // Wait for it to arrive here: attaching again for another object, with
+        // this one still on its way, could leave the host without the handler.
+        if (sent)
+            WaitForSingleObject(ctrl_c_delivered, 1000);
+    }
     FreeConsole();
-    return sent != FALSE;
+    return sent;
 }
 
 }  // namespace

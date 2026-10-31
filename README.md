@@ -23,11 +23,14 @@ One command at a time per object. Python output arrives line by line, because `P
 |---|---|
 | System | macOS 11 or later, Apple Silicon and Intel (one universal binary). Windows 10 or 11, x64. |
 | Max | 8.2 or later (tested with Max 9) |
-| Pd | tested with Pd vanilla 0.57 and plugdata 0.9.2 (Pd 0.55) |
+| Pd | macOS: tested with Pd vanilla 0.57 and plugdata 0.9.2 (Pd 0.55) |
+| Windows | tested on Windows 10 with Max and the plugdata standalone app; Pd vanilla and Windows 11 use the same binaries but have not been tried yet |
 
 ## Install
 
-Download the zip you need from [Releases](https://github.com/anatrini/spawn/releases/latest):
+Download the zip you need from [Releases](https://github.com/anatrini/spawn/releases/latest).
+
+### macOS
 
 | Host | Zip | Move the `spawn` folder into |
 |---|---|---|
@@ -55,7 +58,7 @@ In Pd vanilla, if `[spawn]` is not found, check that `~/Documents/Pd/externals` 
 | Pd vanilla | `spawn-<version>-pd-windows.zip` | `%AppData%\Pd\` (create it if missing) |
 | plugdata (standalone app) | `spawn-<version>-pd-windows.zip` | `C:\Users\Public\Documents\plugdata\Externals\` |
 
-Nothing else needs installing. Before extracting, right click the zip → Properties → Unblock, if that box is shown.
+Nothing else needs installing. Before extracting, right click the zip → Properties → Unblock, if that box is shown. Open plugdata once first, so that it creates its folders. Then restart the host and create a `[spawn]` object.
 
 On Windows 11, Smart App Control blocks unsigned files and allows no exceptions: if `[spawn]` does not load and Smart App Control is on (Windows Security → App & browser control), it has to be turned off. The plugin versions of plugdata (VST3, LV2, CLAP) cannot load the external on Windows.
 
@@ -102,7 +105,7 @@ Without `-b`, Pd reads the packet as text and stops at the first zero byte: only
 
 ## Troubleshooting
 
-- **Nothing happens, or `sh: …: command not found`**: the program is not on the path of `/bin/sh`. Use its full path, or a path relative to the patch.
+- **Nothing happens, `sh: …: command not found`, or on Windows `'…' is not recognized as an internal or external command`**: the program is not on the path of the shell. Use its full path, or a path relative to the patch.
 - **`command ended with error code …`**: the command failed; its own error messages are in the lines just above.
 - **Camera or microphone**: macOS asks permission for the app that started the script (Max, Pd or plugdata), not for Python. The first time, the script may fail with a message such as `not authorized to capture video`; click Allow in the system dialog, or enable the app in System Settings → Privacy & Security → Camera (or Microphone), then send the command again. If the app is not listed: `tccutil reset Camera com.plugdata.plugdata` (or `com.cycling74.Max`, `info.puredata.pd.pd-gui`) and try again.
 - **`… cannot be opened because the developer cannot be verified`**: run the `xattr -cr` command above on the installed folder.

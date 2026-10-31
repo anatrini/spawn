@@ -1,8 +1,10 @@
 # Changelog
 
-## 0.3.0
+## 0.3.0 (2026-10-31)
 
 - Windows 10 and 11, x64: Max external (`spawn.mxe64`) and Pd external (`spawn.dll`). The command runs through `cmd.exe`; `stop` sends ctrl-C and ends the whole command after 3 s.
+- Tested on Windows 10 with Max and the plugdata standalone app. The plugin versions of plugdata cannot load the external on Windows.
+- Releases now ship four zips: Max and Pd, for macOS and Windows.
 
 ## 0.2.0 (2026-10-22)
 

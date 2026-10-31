@@ -128,7 +128,11 @@ static void spawn_free(t_spawn* x)
     clock_free(x->clock);
 }
 
+#ifdef _WIN32
+extern "C" __declspec(dllexport) void spawn_setup(void)
+#else
 extern "C" void spawn_setup(void)
+#endif
 {
     spawn_class = class_new(gensym("spawn"), (t_newmethod)spawn_new, (t_method)spawn_free,
                             sizeof(t_spawn), CLASS_DEFAULT, A_NULL);

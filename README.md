@@ -10,7 +10,7 @@ An object for **Max** and **Pd** (vanilla and plugdata) that runs a command line
 [print]              [toggle]
 ```
 
-- **Message**: the command line. It runs through `/bin/sh` in the folder of the patch, so relative paths, quotes, `*`, `>` and `&&` work as in a terminal.
+- **Message**: the command line. It runs in the folder of the patch, through `/bin/sh` on macOS and `cmd.exe` on Windows, so relative paths, quotes, `>` and `&&` work as in a terminal.
 - **`stop`**: sends ctrl-C; if the command is still running after 3 s, it is ended. Deleting the object or closing the patch also stops it.
 - **Left outlet**: each line the command prints, normal output and errors, in order.
 - **Right outlet**: 1 when the command starts, 0 when it ends.
@@ -21,7 +21,7 @@ One command at a time per object. Python output arrives line by line, because `P
 
 | | |
 |---|---|
-| System | macOS 11 or later, Apple Silicon and Intel (one universal binary). Windows will follow. |
+| System | macOS 11 or later, Apple Silicon and Intel (one universal binary). Windows 10 or 11, x64. |
 | Max | 8.2 or later (tested with Max 9) |
 | Pd | tested with Pd vanilla 0.57 and plugdata 0.9.2 (Pd 0.55) |
 
@@ -47,6 +47,18 @@ Then restart Max, Pd or plugdata and create a `[spawn]` object. The help patch o
 
 In Pd vanilla, if `[spawn]` is not found, check that `~/Documents/Pd/externals` is in Preferences → Path.
 
+### Windows
+
+| Host | Zip | Move the `spawn` folder into |
+|---|---|---|
+| Max | `spawn-<version>-max-windows.zip` | `Documents\Max 9\Packages\` (Max 8: `Documents\Max 8\Packages\`) |
+| Pd vanilla | `spawn-<version>-pd-windows.zip` | `%AppData%\Pd\` (create it if missing) |
+| plugdata (standalone app) | `spawn-<version>-pd-windows.zip` | `C:\Users\Public\Documents\plugdata\Externals\` |
+
+Nothing else needs installing. Before extracting, right click the zip → Properties → Unblock, if that box is shown.
+
+On Windows 11, Smart App Control blocks unsigned files and allows no exceptions: if `[spawn]` does not load and Smart App Control is on (Windows Security → App & browser control), it has to be turned off. The plugin versions of plugdata (VST3, LV2, CLAP) cannot load the external on Windows.
+
 ## Running a Python script
 
 Programs outside `/usr/bin` and `/bin` need their path. For Python, give the interpreter of the script's environment, not a system `python3`. With a [uv](https://docs.astral.sh/uv/) environment `.venv` next to the patch:
@@ -58,6 +70,14 @@ Programs outside `/usr/bin` and `/bin` need their path. For Python, give the int
 The path is relative to the folder of the patch, so the same message works on every computer that has the same folder layout. Save the patch first: an unsaved patch runs commands in the home folder.
 
 In a Pd message box, a space inside a path is written with a backslash: `ls ~/Documents/Max\ 9`.
+
+On Windows the interpreter is in `Scripts`, and forward slashes work in the program path, which avoids the backslash problem in message boxes:
+
+```
+.venv/Scripts/python.exe script.py --port 9001
+```
+
+So the first word of a command is always read as a path: write `dir /b` with its space, not `dir/b`. The commands are those of `cmd.exe` (`dir`, `cd`), not `ls` or `pwd`. An unsaved patch runs commands in the user folder.
 
 ### Receiving OSC from the script
 
@@ -99,10 +119,20 @@ cmake --build build
 
 The Max external is written to `externals/spawn.mxo` (the repository is a Max package), the Pd external to `pd/spawn.pd_darwin`, next to `pd/spawn-help.pd`. Both are universal (arm64 and x86_64) and signed ad hoc. To build only one of them: `-DSPAWN_MAX=OFF` or `-DSPAWN_PD=OFF`.
 
+On Windows: Git, CMake 3.19 or later and the Visual Studio C++ build tools. For Max, the folder `max-sdk-base` is enough; the Pd build needs neither Pd nor `pd.lib`.
+
+```
+git clone https://github.com/Cycling74/max-sdk-base.git ..\max-sdk-base
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DMAX_SDK_BASE_DIR=../max-sdk-base
+cmake --build build --config Release
+```
+
+The Max external is written to `externals\spawn.mxe64`, the Pd external to `pd\spawn.dll`. Both contain the C++ runtime, so they need nothing installed on the target computer.
+
 Layout:
 
 ```
-source/core/   process handling shared by both (posix_spawn, reader thread, stop)
+source/core/   process handling shared by both (proc.cpp: macOS, proc_win.cpp: Windows)
 source/max/    Max binding
 source/pd/     Pd binding
 help/          Max help patch
@@ -116,6 +146,16 @@ Tests of the process code, without Max or Pd. `SPAWN_TEST_PYTHON` is the full pa
 cmake -S . -B build -DSPAWN_TESTS=ON
 cmake --build build
 SPAWN_TEST_PYTHON=/path/to/env/bin/python build/test_proc
+```
+
+On Windows, in `cmd.exe`, with the output going to a file (the tests must run without a console):
+
+```
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DMAX_SDK_BASE_DIR=../max-sdk-base -DSPAWN_TESTS=ON
+cmake --build build --config Release
+set SPAWN_TEST_PYTHON=C:\path\to\python.exe
+build\Release\test_proc.exe > build\test.txt
+type build\test.txt
 ```
 
 ## License

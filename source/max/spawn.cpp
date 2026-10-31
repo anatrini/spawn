@@ -91,14 +91,25 @@ static std::string patch_folder(t_spawn* x)
         t_symbol* fp = jpatcher_get_filepath(p);
         if (fp && fp->s_name[0]) {
             char native[MAX_PATH_CHARS];
+#ifdef WIN_VERSION
+            // A boot path has no drive letter on Windows.
+            path_nameconform(fp->s_name, native, PATH_STYLE_NATIVE, PATH_TYPE_ABSOLUTE);
+            const char* separators = "\\/";
+#else
             path_nameconform(fp->s_name, native, PATH_STYLE_NATIVE, PATH_TYPE_BOOT);
+            const char* separators = "/";
+#endif
             std::string path(native);
-            size_t slash = path.rfind('/');
+            size_t slash = path.find_last_of(separators);
             if (slash != std::string::npos)
                 return path.substr(0, slash);
         }
     }
+#ifdef WIN_VERSION
+    const char* home = std::getenv("USERPROFILE");
+#else
     const char* home = std::getenv("HOME");
+#endif
     return home ? home : "";
 }
 

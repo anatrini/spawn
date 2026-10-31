@@ -206,7 +206,7 @@
                     "numinlets": 1,
                     "numoutlets": 0,
                     "patching_rect": [ 30.0, 347.0, 700.0, 74.0 ],
-                    "text": "The command runs through /bin/sh, in the folder of the patch (home folder if the patch is not saved): quotes, *, > and && work as in a terminal. Programs outside /usr/bin and /bin need their full path, for example the python of a conda or uv environment.\nOne command at a time per object. stop sends ctrl-C and ends the command after 3 s if it is still running. Deleting the object or closing the patch also stops it.\nLeft outlet: each line printed, normal output and errors. Right outlet: 1 at the start, 0 at the end."
+                    "text": "The command runs through /bin/sh (cmd.exe on Windows: try cd, dir, ping -t 127.0.0.1), in the folder of the patch (home folder if the patch is not saved): quotes, *, > and && work as in a terminal. Programs outside /usr/bin and /bin need their full path, for example the python of a conda or uv environment.\nOne command at a time per object. stop sends ctrl-C and ends the command after 3 s if it is still running. Deleting the object or closing the patch also stops it.\nLeft outlet: each line printed, normal output and errors. Right outlet: 1 at the start, 0 at the end."
                 }
             }
         ],

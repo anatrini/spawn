@@ -1,0 +1,29 @@
+; What spawn uses from Pd. The Windows build makes an import library from this
+; list, so neither Pd nor its pd.lib is needed to compile.
+LIBRARY pd.dll
+EXPORTS
+    atom_string
+    binbuf_free
+    binbuf_getnatom
+    binbuf_getvec
+    binbuf_new
+    binbuf_text
+    canvas_getcurrent
+    canvas_getdir
+    class_addanything
+    class_addlist
+    class_addmethod
+    class_new
+    clock_delay
+    clock_free
+    clock_new
+    gensym
+    outlet_anything
+    outlet_float
+    outlet_list
+    outlet_new
+    pd_error
+    pd_new
+    post
+    s_float DATA
+    s_list DATA
